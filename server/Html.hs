@@ -30,14 +30,11 @@ instance L.ToHtml a => L.ToHtml (HtmlPage a) where
               , L.type_ "image/x-icon"
               , L.href_ "static/images/favicon.png"
               ]
-            cssRefAll "static/css/bootstrap.min.css" 
+            cssRefAll "static/css/bootstrap.grid.min.css" 
             cssRefAll "static/css/style.css"
-            cssRef "/static/css/font-awesome.min.css"
-            cssRef "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700"
+            cssRef "https://fonts.googleapis.com/css?family=Merriweather:300,400%7CRubik:400,500,700"
           L.body_ (L.toHtml x)
           jsRef "static/all.js"
-          jsRef "static/js/jquery-1.12.3.min.js"
-          jsRef "static/js/main.js"
             where
               jsRef href =
                 L.with (L.script_ mempty)

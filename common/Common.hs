@@ -30,14 +30,12 @@ data Model
 
 data Action
   = NoOp
-  | AddOne
-  | SubtractOne
   | ChangeURI !Network.URI
   | HandleURIChange !Network.URI
   deriving (Show, Eq)
 
 -- Holds a servant route tree of `View action`
-type ViewRoutes = Home :<|> Flipped :<|> Categories
+type ViewRoutes = Home :<|> About
 
 -- Home route, contains two buttons and a field
 type Home = View Action
@@ -45,26 +43,49 @@ type Home = View Action
 -- Flipped route, same as Home, but with the buttons flipped
 type Flipped = "flipped" :> View Action
 
-type Categories = "categories" :> View Action
+type About = "about" :> View Action
 
 makeLenses ''Model
 
 -- | Handlers
 handlers = homeView
-  :<|> homeView
-  :<|> homeView
+  :<|> aboutView
 
 -- View function of the Home route
 homeView :: Model -> View Action
 homeView _ = template $ hero
   where hero = 
-          section_ [ class_ "top-header bg-pattern pad-125" ]
-            [ div_ [ class_ "container" ]
-              [ div_ [ class_ "row" ] 
-                [ div_ [ class_ "col-md-10 offset-md-1 text-left pad-left-90 pad-right-90 line-link has-animation animate-in" ]
-                  [ h1_ [ class_ "title-one" ] [ span_ [] [ text "Hi" ], text " , I am Peter Storm, a developer based in Denmark" ] 
+          main_ [ id_ "content", class_ "white_background" ]
+            [ div_ [ class_ "container" ] 
+              [ div_ [ class_ "row" ]
+                [ div_ [ class_ "project-listing col-12" ]
+                  [ div_ [ class_ "grid clearfix" ]
+                    [ div_ [ class_ "grid-item grid-item-wide project-thumb welcome-message" ]
+                      [ div_ [ class_ "inner" ]
+                        [ h1_ [] [ text "Hi! I'm Peter Storm", a_ [ href_ "/categories", onPreventClick $ ChangeURI aboutLink ] [ text "STORM" ] ]
+                        ]
+                      ]
+                    ]
                   ]
+                ]
               ]
+            ]
+
+aboutView :: Model -> View Action
+aboutView _ = template $ hero
+  where hero =
+          main_ [ id_ "content", class_ "white_background" ]
+            [ div_ [ class_ "container" ] 
+              [ div_ [ class_ "row" ]
+                [ div_ [ class_ "project-listing col-12" ]
+                  [ div_ [ class_ "grid clearfix" ]
+                    [ div_ [ class_ "grid-item grid-item-wide project-thumb welcome-message" ]
+                      [ div_ [ class_ "inner" ]
+                        [ h1_ [] [ text "This is a hello from ABOUT" ] ]
+                      ]
+                    ]
+                  ]
+                ]
               ]
             ]
 
@@ -78,34 +99,22 @@ template content =
 
 header :: View Action
 header = 
-  section_ [ class_ "header-wrapper style-two" ]
+  header_ [ id_ "top", class_ "navbar header" ]
     [ div_ [ class_ "container" ]
-      [ div_ [ class_ "row" ]
-        [ div_ [ class_ "col-lg-2 col-md-12 text-left" ]
-          [ a_ [ href_ "/", class_ "logo" ] [ img_ [src_ "static/images/logo-2.png", alt_ "logo" ] ]
-          , a_ [ href_ "#", class_ "menu-click" ] [ span_ [] [], span_ [] [], span_ [] [] ]
-          ]
-          , div_ [ class_ "col-lg-8 col-md-12" ]
-              [ nav_ [ id_ "main-menu", class_ "text-center" ]
-                [ ul_ []
-                  [ li_ [] [ a_ [ href_ "/"] [ text "Home" ] ] 
-                  , li_ [] [ a_ [ href_ "/categories", onPreventClick $ ChangeURI categoriesLink ] [ text "Categories" ] ] 
-                  , li_ [] [ a_ [ href_ "/flipped", onPreventClick $ ChangeURI categoriesLink ] [ text "About" ] ]
-                  , li_ [] [ a_ [ href_ "/flipped", onPreventClick $ ChangeURI categoriesLink ] [ text "Contact" ] ]
-                  ]
-                ]
-              ]
-          , div_ [ class_ "col-lg-2 col-md-4 text-right" ]
-              [ ul_ [ class_ "soical-icon-font list-inline pt-2 pb-0" ]
-                [ li_ [ class_ "list-inline-item" ] [ a_ [ href_ "#" ] [ i_ [ class_ "fa fa-facebook" ] [] ] ]
-                , li_ [ class_ "list-inline-item" ] [ a_ [ href_ "#" ] [ i_ [ class_ "fa fa-twitter" ] [] ] ]
-                , li_ [ class_ "list-inline-item" ] [ a_ [ href_ "#" ] [ i_ [ class_ "fa fa-linkedin" ] [] ] ]
-                , li_ [ class_ "list-inline-item" ] [ a_ [ href_ "#" ] [ i_ [ class_ "fa fa-heart" ] [] ] ]
-                ]
-              ]
+      [ div_ [ class_ "inner" ]
+        [ div_ [ class_ "site-menu" ]
+          [ a_ [ href_ "/", onPreventClick $ ChangeURI homeLink, class_ "logo" ] [ img_ [ src_ "static/images/logo-storm.png", width_ "144", height_ "33", alt_ "Storm" ] ] ] 
+          , input_ [ class_ "menu-btn", type_ "checkbox", id_ "menu-btn" ]
+          , label_ [ class_ "menu-icon", for_ "menu-btn" ] [ span_ [ class_ "navicon" ] [] ]
+          , ul_ [ class_ "menu" ]
+            [ li_ [] [ a_ [ href_ "/", onPreventClick $ ChangeURI homeLink ] [ text "HOME" ] ]
+            , li_ [] [ a_ [ href_ "/categories", onPreventClick $ ChangeURI aboutLink ] [ text "ABOUT" ] ]
+            , li_ [] [ a_ [ href_ "/categories", onPreventClick $ ChangeURI aboutLink ] [ text "BLOG" ] ]
+            , li_ [] [ a_ [ href_ "/categories", onPreventClick $ ChangeURI aboutLink ] [ text "CONTACT" ] ]
+            ]
+        ]
         ]
       ]
-    ]
 
 footer :: View Action
 footer = div_ [] []
@@ -130,11 +139,11 @@ homeLink =
 #endif
 
 -- Network.URI that points to the home route
-categoriesLink :: Network.URI
-categoriesLink =
+aboutLink :: Network.URI
+aboutLink =
 #if MIN_VERSION_servant(0,10,0)
-    Servant.linkURI $ Servant.safeLink (Proxy @ViewRoutes) (Proxy @Categories)
+    Servant.linkURI $ Servant.safeLink (Proxy @ViewRoutes) (Proxy @About)
 #else
-    safeLink (Proxy @ViewRoutes) (Proxy @Categories)
+    safeLink (Proxy @ViewRoutes) (Proxy @About)
 #endif
 

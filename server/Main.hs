@@ -37,13 +37,12 @@ app =
             static = Servant.serveDirectoryFileServer "static"
 
 
-serverHandlers :: ServerHandler :<|> ServerHandler :<|> ServerHandler
-serverHandlers = homeServer :<|> flippedServer :<|> categoriesServer
+serverHandlers :: ServerHandler :<|> ServerHandler
+serverHandlers = homeServer :<|> aboutServer 
   where 
     send f u = pure $ HtmlPage $ f Common.Model { Common._uri = u }
     homeServer = send Common.homeView Common.homeLink 
-    categoriesServer = send Common.homeView Common.categoriesLink
-    flippedServer = send Common.homeView Common.categoriesLink
+    aboutServer= send Common.aboutView Common.aboutLink
 
 type ServerHandler = Servant.Handler (HtmlPage (View Common.Action))
 

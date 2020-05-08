@@ -9,6 +9,7 @@ module Common where
 
 import Control.Lens
 import Data.Proxy ( Proxy(..) )
+import qualified Data.Map as Map
 import qualified Servant.API as Servant
 import Servant.API ( (:<|>)(..), (:>) )
 #if MIN_VERSION_servant(0,10,0)
@@ -37,11 +38,8 @@ data Action
 -- Holds a servant route tree of `View action`
 type ViewRoutes = Home :<|> About
 
--- Home route, contains two buttons and a field
 type Home = View Action
 
--- Flipped route, same as Home, but with the buttons flipped
-type Flipped = "flipped" :> View Action
 
 type About = "about" :> View Action
 
@@ -59,10 +57,10 @@ homeView _ = template $ hero
             [ div_ [ class_ "container" ] 
               [ div_ [ class_ "row" ]
                 [ div_ [ class_ "project-listing col-12" ]
-                  [ div_ [ class_ "grid clearfix" ]
+                  [ div_ [ class_ "grid clearfix", stringProp "data-masonry" "{ \"itemSelector\": \".grid-item\", \"columnWidth\": \".grid-sizer\", \"gutter\": \".gutter-sizer\", \"percentPosition\": true, \"transitionDuration\": \"0.3s\" } "  ]
                     [ div_ [ class_ "grid-item grid-item-wide project-thumb welcome-message" ]
                       [ div_ [ class_ "inner" ]
-                        [ h1_ [] [ text "Hi! I'm Peter Storm", a_ [ href_ "/categories", onPreventClick $ ChangeURI aboutLink ] [ text "STORM" ] ]
+                        [ h1_ [] [ text "Hi! I'm Peter Storm", a_ [ href_ "/about", onPreventClick $ ChangeURI aboutLink ] [ text "STORM" ] ]
                         ]
                       ]
                     ]
@@ -75,17 +73,10 @@ aboutView :: Model -> View Action
 aboutView _ = template $ hero
   where hero =
           main_ [ id_ "content", class_ "white_background" ]
-            [ div_ [ class_ "container" ] 
-              [ div_ [ class_ "row" ]
-                [ div_ [ class_ "project-listing col-12" ]
-                  [ div_ [ class_ "grid clearfix" ]
-                    [ div_ [ class_ "grid-item grid-item-wide project-thumb welcome-message" ]
-                      [ div_ [ class_ "inner" ]
-                        [ h1_ [] [ text "This is a hello from ABOUT" ] ]
-                      ]
-                    ]
-                  ]
-                ]
+            [ div_ [ class_ "custom-grid col-12" ]
+              [ div_ [ class_ "grid-section1", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] [] 
+              , div_ [ class_ "grid-section2", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] []  
+              , div_ [ class_ "grid-section3", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] [] 
               ]
             ]
 
@@ -108,9 +99,9 @@ header =
           , label_ [ class_ "menu-icon", for_ "menu-btn" ] [ span_ [ class_ "navicon" ] [] ]
           , ul_ [ class_ "menu" ]
             [ li_ [] [ a_ [ href_ "/", onPreventClick $ ChangeURI homeLink ] [ text "HOME" ] ]
-            , li_ [] [ a_ [ href_ "/categories", onPreventClick $ ChangeURI aboutLink ] [ text "ABOUT" ] ]
-            , li_ [] [ a_ [ href_ "/categories", onPreventClick $ ChangeURI aboutLink ] [ text "BLOG" ] ]
-            , li_ [] [ a_ [ href_ "/categories", onPreventClick $ ChangeURI aboutLink ] [ text "CONTACT" ] ]
+            , li_ [] [ a_ [ href_ "/about", onPreventClick $ ChangeURI aboutLink ] [ text "ABOUT" ] ]
+            , li_ [] [ a_ [ href_ "/about", onPreventClick $ ChangeURI aboutLink ] [ text "BLOG" ] ]
+            , li_ [] [ a_ [ href_ "/about", onPreventClick $ ChangeURI aboutLink ] [ text "CONTACT" ] ]
             ]
         ]
         ]

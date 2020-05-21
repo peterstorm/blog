@@ -1,9 +1,9 @@
 { pkgs ? import ../nixpkgs.nix }:
 
 let
-
+  haskellPackages = pkgs.haskell.packages.ghc864;
   client = pkgs.haskell.packages.ghcjs.callCabal2nix "client" ./. {
-    common = pkgs.haskell.packages.ghcjs.callCabal2nix "common" ../common {};
+  common = pkgs.haskell.packages.ghcjs.callCabal2nix "common" ../common {};
   };
 
   client_pkg = pkgs.stdenv.mkDerivation {
@@ -16,7 +16,8 @@ let
   };
 
 in
-
-  if pkgs.lib.inNixShell then client.env else client_pkg
+  if pkgs.lib.inNixShell then client.env.overrideAttrs (old: {
+      buildInputs = old.buildInputs ++ [ haskellPackages.cabal-install haskellPackages.ghcid ];
+  }) else client_pkg
 
 

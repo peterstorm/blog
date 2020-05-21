@@ -19,9 +19,5 @@ executable client
                     miso,
                     network-uri,
                     servant
-  js-sources:       jsbits/jquery-1.12.3.min.js,
-                    jsbits/main.js
-                    jsbits/plugin.js
-                    jsbit/popper.min.js
 
 

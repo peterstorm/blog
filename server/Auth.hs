@@ -113,36 +113,61 @@ getUser = findEmailFromUserId
 
 instance AuthRepo m => AuthRepo (ExceptT e m) where
   addAuth = lift . addAuth
-  setEmailAsVerified = undefined
-  findUserByAuth = undefined
+  setEmailAsVerified = lift . setEmailAsVerified
+  findUserByAuth = lift . findUserByAuth 
   findEmailFromUserId = undefined
+
+instance SessionRepo m => SessionRepo (ExceptT e m) where
+  newSession = lift . newSession
+  findUserBySessionId = lift . findUserBySessionId
 
 instance EmailVerificationNotif m => EmailVerificationNotif (ExceptT e m) where
   notifyEmailVerification email code = lift $ notifyEmailVerification email code
 
 -- for testing
-errorString :: RegistrationError -> String
-errorString RegistrationErrorEmailTaken = "failed, email taken"
+regErrorString :: RegistrationError -> String
+regErrorString RegistrationErrorEmailTaken = "failed, email taken"
+
+loginErrorString :: LoginError -> String
+loginErrorString LoginErrorInvalidAuth = "invalid auth"
+loginErrorString LoginErrorEmailNotVerified = "email not verified"
+
+
 
 instance AuthRepo IO where
   addAuth (Auth email pass) = do
     putStrLn $ "adding auth: " <> (unpack $ rawEmail email)
     pure $ Right "fake verification code"
   setEmailAsVerified = undefined
-  findUserByAuth = undefined
+  findUserByAuth _ = pure $ Just (1, False)
   findEmailFromUserId = undefined
 
 instance EmailVerificationNotif IO where
  notifyEmailVerification email vcode =
    putStrLn $ "Notify " <> (unpack $ rawEmail email) <> " - " <> (unpack vcode)
 
+instance SessionRepo IO where
+  newSession _ = pure "asefawefawfe"
+  findUserBySessionId = undefined
+
 main :: IO ()
 main = do
-  let Right email = mkEmail (pack "test@oister.dk")
-  let Right password = mkPassword (pack "123123AWEFAWEFAWawefawf")
-  let auth = Auth email password
-  result <- runExceptT $ register auth
-  case result of
-    Left x  -> putStrLn $ errorString x
-    Right _ -> pure ()
+  let email = mkEmail (pack "test@oister.dk")
+  let password = mkPassword (pack "123AAaa45")
+  case email of
+    Left x -> putStrLn $ Prelude.foldr (\a b -> a <> ", " <> b) "" $ fmap unpack x
+    Right x -> do
+      case password of
+        Left x' -> putStrLn $ Prelude.foldr (\a b -> a <> ", " <> b) "" $ fmap unpack x'
+        Right xx -> do
+          let auth = Auth x xx
+          result <- runExceptT $ register auth
+          case result of
+            Left x''  -> putStrLn $ regErrorString x''
+            Right _ -> pure ()
+          session <- runExceptT $ login auth
+          case session of
+            Left x'''     -> putStrLn $ loginErrorString x'''
+            Right session -> putStrLn $ unpack session
+
 

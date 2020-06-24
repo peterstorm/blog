@@ -1,5 +1,27 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes, FlexibleContexts, OverloadedStrings #-}
-module Auth where
+module Auth (
+  Auth(..),
+  Email,
+  mkEmail,
+  rawEmail,
+  Password,
+  mkPassword,
+  rawPassword,
+  UserId,
+  VerificationCode,
+  SessionId,
+  RegistrationError(..),
+  EmailValidationErr(..),
+  LoginError(..),
+  AuthRepo(..),
+  EmailVerificationNotif(..),
+  SessionRepo(..),
+  register,
+  verifyEmail,
+  login,
+  resolveSessionId,
+  getUser
+) where
 
 import Control.Lens hiding (re)
 import Control.Monad.Except
@@ -10,7 +32,7 @@ import Text.Regex.PCRE.Heavy
 
 import Validation
 
-newtype Email = Email { emailRaw :: Text } deriving (Show, Eq)
+newtype Email = Email { emailRaw :: Text } deriving (Show, Eq, Ord)
 
 rawEmail :: Email -> Text
 rawEmail = emailRaw
@@ -29,7 +51,7 @@ rawPassword = passwordRaw
 
 mkPassword :: Text -> Either [Text] Password
 mkPassword = validate Password
-  [ lengthBetween 5 50 $ "Should be between 5 and 50"
+  [ lengthBetween 5 50 $ "Should be between 5 a ' ' ''State'State'Statend 50"
   , regexMatches [re|\d|] $ "Should contain number"
   , regexMatches [re|[A-Z]|] $ "Should contain uppercase letter"
   , regexMatches [re|[a-z]|] $ "Should contain lowercase letter"

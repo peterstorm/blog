@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, FlexibleContexts, OverloadedStrings, ConstraintKinds, PartialTypeSignatures #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, FlexibleContexts, OverloadedStrings, ConstraintKinds #-}
 module InMemory.Auth where
 
 import qualified Data.Map as M
@@ -8,7 +8,8 @@ import Control.Concurrent.STM
 import Control.Monad.Reader
 import Control.Monad.Except
 import Text.StringRandom
-import Data.Text
+import Data.Text hiding (find)
+import Data.List
 
 import qualified Auth as A
 
@@ -42,7 +43,10 @@ findUserByAuth :: InMemory r e m => A.Auth -> m (Maybe (A.UserId, Bool))
 findUserByAuth = undefined
 
 findEmailFromUserId :: InMemory r e m => A.UserId -> m (Maybe A.Email)
-findEmailFromUserId uId = undefined
+findEmailFromUserId uId = do
+  state <- view tVarState >>= liftIO . readTVarIO
+  let maybeAuth = find ((uId ==) . fst) $ state ^. stateAuths
+  pure $ maybeAuth <&> (A._authEmail . snd)
 
 
 notifyEmailVerification :: InMemory r e m => A.Email -> A.VerificationCode -> m ()
@@ -63,7 +67,6 @@ newSession uId = do
   state <- liftIO $ readTVarIO tvarState'
   liftIO $ atomically $ writeTVar tvarState' (state & stateSessions . at sId ?~ uId)
   pure sId
-
 
 findUserBySessionId :: InMemory r e m => A.SessionId -> m (Maybe A.UserId)
 findUserBySessionId sId = do

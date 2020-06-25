@@ -30,6 +30,7 @@ executable server
                     servant,
                     servant-lucid,
                     servant-server,
+                    string-random,
                     text,
                     wai,
                     wai-extra,

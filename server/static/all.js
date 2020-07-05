@@ -1,1 +1,1 @@
-../../client/dist/build/client/client.jsexe/all.js
+../../client/dist-newstyle/build/x86_64-linux/ghcjs-8.6.0.1/client-0.1.0.0/x/client/build/client/client.jsexe/all.js

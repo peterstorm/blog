@@ -15,6 +15,9 @@ import qualified Servant.Links as Servant
 import qualified Miso
 import Miso ( View, App(..) )
 import qualified Miso.String as Miso
+import GHCJS.Types
+import GHCJS.Marshal
+import GHCJS.Foreign.Callback
 
 main :: IO ()
 main =
@@ -43,3 +46,8 @@ updateModel action =
           Miso.pushURI uri
           pure Common.NoOp
       Common.HandleURIChange uri -> Common.uri .= uri
+      Common.InitMasonry -> Miso.scheduleIO $ do 
+        initMasonry
+        pure Common.NoOp
+
+foreign import javascript unsafe "initMasonry" initMasonry :: IO ()

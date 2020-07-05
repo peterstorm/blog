@@ -34,18 +34,16 @@ instance L.ToHtml a => L.ToHtml (HtmlPage a) where
             cssRefAll "static/css/style.css"
             cssRef "https://fonts.googleapis.com/css?family=Merriweather:300,400%7CRubik:400,500,700"
           L.body_ (L.toHtml x)
-          jsRefAsync "static/all.js"
-          jsRefAsync "static/js/modernizr-custom.min.js"
           jsRefAsync "static/js/jquery.min.js"
+          jsRefAsync "static/js/modernizr-custom.min.js"
           jsRefAsync "static/js/imagesloaded.pkgd.min.js"
           jsRefAsync "static/js/masonry.pkgd.min.js"
           jsRefAsync "static/js/functions.js"
+          jsRefAsync "static/all.js"
             where
               jsRefAsync href =
                 L.with (L.script_ mempty)
                   [ L.makeAttribute "src" href
-                  , L.makeAttribute "async" mempty
-                  , L.makeAttribute "defer" mempty
                   ]
               cssRefAll href =
                 L.with (L.link_ mempty)

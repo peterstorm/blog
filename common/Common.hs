@@ -28,41 +28,56 @@ data Model
      }
      deriving (Eq, Show)
 
+makeLenses ''Model
 
 data Action
   = NoOp
   | ChangeURI !Network.URI
   | HandleURIChange !Network.URI
+  | InitMasonry
   deriving (Show, Eq)
 
 -- Holds a servant route tree of `View action`
-type ViewRoutes = Home :<|> About
+type ViewRoutes = Home :<|> About :<|> Wedding
 
 type Home = View Action
 
-
 type About = "about" :> View Action
 
-makeLenses ''Model
+type Wedding = "bryllup" :> View Action
+
+type Link = Miso.MisoString 
+
+type ImgSrc = Miso.MisoString 
+
+type Title = Miso.MisoString 
+
+type Description = Miso.MisoString
 
 -- | Handlers
 handlers = homeView
   :<|> aboutView
+  :<|> weddingView
 
 -- View function of the Home route
 homeView :: Model -> View Action
 homeView _ = template $ hero
   where hero = 
-          main_ [ id_ "content", class_ "white_background" ]
+          main_ [ id_ "content", class_ "white-background" ]
             [ div_ [ class_ "container" ] 
               [ div_ [ class_ "row" ]
-                [ div_ [ class_ "project-listing col-12" ]
-                  [ div_ [ class_ "grid clearfix", stringProp "data-masonry" "{ \"itemSelector\": \".grid-item\", \"columnWidth\": \".grid-sizer\", \"gutter\": \".gutter-sizer\", \"percentPosition\": true, \"transitionDuration\": \"0.3s\" } "  ]
+                [ div_ [ class_ "project-listing col-12", onCreated InitMasonry ]
+                  [ div_ [ class_ "grid clearfix", stringProp "data-masonry" ("{ \"itemSelector\": \".grid-item\""
+                  <> ", \"columnWidth\": \".grid-sizer\", \"gutter\": \".gutter-sizer\", \"percentPosition\": true, \"transitionDuration\": \"0.3s\" } ")  ]
                     [ div_ [ class_ "grid-item grid-item-wide project-thumb welcome-message" ]
                       [ div_ [ class_ "inner" ]
-                        [ h1_ [] [ text "Hi! I'm Peter Storm", a_ [ href_ "/about", onPreventClick $ ChangeURI aboutLink ] [ text "STORM" ] ]
-                        ]
+                        [ h1_ [] [ text "Hi! I'm Peter Storm, and this is a test! "
+                                 , a_ [ href_ "/about", onPreventClick $ ChangeURI aboutLink ] [ text "Go to ABOUT!" ] ] ]
                       ]
+                    , gridItem "/about" aboutLink "static/images/sample-square.png" "BON" "Create intrigue around bla bla products"
+                    , gridItem "/about" aboutLink "static/images/sample-square.png" "FrockHub" "Luxury fashion resource by Saxon Campbell"
+                    , div_ [ class_ "grid-sizer" ] []
+                    , div_ [ class_ "gutter-sizer" ] []
                     ]
                   ]
                 ]
@@ -72,13 +87,54 @@ homeView _ = template $ hero
 aboutView :: Model -> View Action
 aboutView _ = template $ hero
   where hero =
-          main_ [ id_ "content", class_ "white_background" ]
+          main_ [ id_ "content", class_ "white-background" ]
             [ div_ [ class_ "custom-grid col-12" ]
               [ div_ [ class_ "grid-section1", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] [] 
               , div_ [ class_ "grid-section2", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] []  
               , div_ [ class_ "grid-section3", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] [] 
               ]
             ]
+
+weddingView :: Model -> View Action
+weddingView _ =
+          main_ [ id_ "content", class_ "white-background" ]
+            [ div_ [ class_ "container single" ]
+              [ div_ [ class_ "row" ]
+                [ div_ [ class_ "col-12" ]
+                  [ div_ [ class_ "post-featured-image" ]
+                    [ img_ [ src_ "https://scontent-arn2-1.xx.fbcdn.net/v/t1.15752-9/107249001_932210643868161_8037486475191579082_n.png?_nc_cat=110&_nc_sid=b96e70&_nc_ohc=5ESQs8w_1BUAX8rsHyz&_nc_ht=scontent-arn2-1.xx&oh=a7b7f1ba6e55195cce949476d8f40cc7&oe=5F29590E", width_ "1180", height_ "680", alt_ "" ]
+                    ]
+                  ]
+                , div_ [ class_ "col-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2" ]
+                  [ article_ [ class_ "post has-thumbnail" ]
+                    [ div_ [ class_ "post-header" ]
+                      [ h2_ [] [ text "Jóhanna og Peter's Bryllup!" ]
+                      , p_ [ class_ "meta-info" ]
+                        [ span_ [ class_ "post-author" ] [ text "af ", a_ [ href_ "mailto:johannatummasardottir@gmail.com" ] [ text "Jóhanna og Peter" ] ]
+                        , span_ [ class_ "post-date" ] [ text "14. August 2020" ]
+                        ]
+                      ]
+                    , div_ [ class_ "post-content" ]
+                      [ p_ [] [ text "This is a test to see if it actually works" ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+
+gridItem :: Link -> Network.URI -> ImgSrc -> Title -> Description -> View Action
+gridItem link uri' src title desc =
+  div_ [  class_ "grid-item project-thumb" ]
+    [ a_ [ href_ link, onPreventClick $ ChangeURI uri' ]
+      [ img_ [ src_ src, width_ "900", height_ "900", alt_ "" ]
+      , span_ [ class_ "project-thumb-details" ]
+        [ span_ [ class_ "title" ] [ text title ]
+        , span_ [ class_ "description" ] [ text desc ]
+        ]
+      , i_ [ class_ "saulticon-arrow-forward" ] []
+      ]
+    ]
 
 template :: View Action -> View Action
 template content = 
@@ -137,4 +193,13 @@ aboutLink =
 #else
     safeLink (Proxy @ViewRoutes) (Proxy @About)
 #endif
+
+weddingLink :: Network.URI
+weddingLink  =
+#if MIN_VERSION_servant(0,10,0)
+    Servant.linkURI $ Servant.safeLink (Proxy @ViewRoutes) (Proxy @Wedding)
+#else
+    safeLink (Proxy @ViewRoutes) (Proxy @Wedding)
+#endif
+
 

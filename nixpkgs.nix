@@ -30,6 +30,7 @@ let
               semigroupoids    = dontCheck super.semigroupoids;
               lens             = dontCheck super.lens;
               QuickCheck       = dontCheck super.QuickCheck;
+              scientific       = dontCheck super.scientific;
 
               network = dontCheck (doJailbreak super.network_2_6_3_1);
               servant-client = dontCheck (doJailbreak super.servant-client);
@@ -45,4 +46,3 @@ let
 in
 
   import nixpkgs-src { inherit config; }
-

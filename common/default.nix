@@ -6,6 +6,8 @@ let
 
 in
    if pkgs.lib.inNixShell then common.env.overrideAttrs (old: {
-      buildInputs = old.buildInputs ++ [ haskellPackages.cabal-install haskellPackages.ghcid ];
+      buildInputs = old.buildInputs ++ [ haskellPackages.cabal-install haskellPackages.ghcid (import (builtins.fetchTarball
+          "https://github.com/hercules-ci/ghcide-nix/tarball/master"
+        ) {}).ghcide-ghc864];
   }) else common
 

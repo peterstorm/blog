@@ -40,7 +40,15 @@ setEmailAsVerified :: InMemory r e m => A.VerificationCode -> m (Either e ())
 setEmailAsVerified = undefined
 
 findUserByAuth :: InMemory r e m => A.Auth -> m (Maybe (A.UserId, Bool))
-findUserByAuth = undefined
+findUserByAuth auth = do
+  state <- view tVarState >>= liftIO . readTVarIO
+  let maybeId = fmap fst . find ((auth ==) . snd) $ state ^. stateAuths
+  case maybeId of
+    Nothing  -> return Nothing
+    Just uID -> do
+      let isVerified = state ^. stateVerifiedEmails & elem (A._authEmail auth)
+      pure $ Just(uID, isVerified)
+  
 
 findEmailFromUserId :: InMemory r e m => A.UserId -> m (Maybe A.Email)
 findEmailFromUserId uId = do

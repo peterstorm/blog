@@ -9,9 +9,9 @@ import Data.Proxy ( Proxy(..) )
 import Control.Lens ( (^.), (+=), (-=), (.=), makeLenses )
 import qualified Servant.API as Servant
 import Servant.API ( (:<|>)(..) )
--- #if MIN_VERSION_servant(0,10,0)
---import qualified Servant.Links as Servant
--- #endif
+#if MIN_VERSION_servant(0,10,0)
+import qualified Servant.Links as Servant
+#endif
 import qualified Miso
 import Miso ( View, App(..) )
 import qualified Miso.String as Miso
@@ -35,7 +35,7 @@ main =
                        Left _  -> Common.page404View
                        Right v -> v
 
-oupdateModel
+updateModel
     :: Common.Action
     -> Miso.Transition Common.Action Common.Model ()
 updateModel action =

@@ -29,7 +29,6 @@ import Control.Monad.Error.Lens
 import Data.Text
 import Text.Regex.PCRE.Heavy
 
-
 import Validation
 
 newtype Email = Email { emailRaw :: Text } deriving (Show, Eq, Ord)

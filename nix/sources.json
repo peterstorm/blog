@@ -1,4 +1,11 @@
 {
+    "haskell-language-server": {
+        "sha256": "1q3vq2gdb3zsmxab1fmq4s7f7p4r3kdzn709aqf83hhfx18sn1rj",
+        "type": "file",
+        "url": "https://github.com/haskell/haskell-language-server/releases/download/0.3.0/haskell-language-server-Linux-8.6.4.gz",
+        "url_template": "https://github.com/haskell/haskell-language-server/releases/download/0.3.0/haskell-language-server-Linux-<version>.gz",
+        "version": "8.6.4"
+    },
     "niv": {
         "branch": "master",
         "description": "Easy dependency management for Nix projects",

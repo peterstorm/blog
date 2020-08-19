@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, QuasiQuotes, FlexibleContexts, OverloadedStrings #-}
 module Auth (
   Auth(..),
+  authEmail,
   Email,
   mkEmail,
   rawEmail,
@@ -11,7 +12,10 @@ module Auth (
   VerificationCode,
   SessionId,
   RegistrationError(..),
+  AsRegistrationError(..),
   EmailValidationErr(..),
+  EmailVerificationError(..),
+  AsEmailVerificationError(..),
   LoginError(..),
   AuthRepo(..),
   EmailVerificationNotif(..),

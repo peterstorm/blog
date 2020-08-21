@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, FlexibleContexts, OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell, QuasiQuotes, FlexibleContexts, OverloadedStrings, DerivingStrategies #-}
 module Auth (
   Auth(..),
   authEmail,
@@ -11,6 +11,8 @@ module Auth (
   UserId,
   VerificationCode,
   SessionId,
+  AppError(..),
+  AsAppError(..),
   RegistrationError(..),
   AsRegistrationError(..),
   EmailValidationErr(..),
@@ -33,6 +35,7 @@ import Control.Monad.Except
 import Control.Monad.Error.Lens
 import Data.Text
 import Text.Regex.PCRE.Heavy
+import Katip
 
 import Validation
 
@@ -96,11 +99,29 @@ data EmailVerificationError = EmailerificationErrorInvalidCode
 
 makeClassyPrisms ''EmailVerificationError
 
+data AppError = RegAppErr RegistrationError
+              | LoginAppErr LoginError
+              | EmailValAppErr EmailValidationErr
+              | EmailVeriAppErr EmailVerificationError
+              deriving stock (Show, Eq)
+
+makeClassyPrisms ''AppError
+
+instance AsRegistrationError AppError where
+  _RegistrationError = _RegAppErr . _RegistrationError
+
+instance AsEmailVerificationError AppError where
+  _EmailVerificationError = _EmailVeriAppErr . _EmailVerificationError
+
+instance AsLoginError AppError where
+  _LoginError = _LoginAppErr . _LoginError
+
+
 type VerificationCode = Text
 
 class Monad m => AuthRepo m where
-  addAuth :: Auth -> m VerificationCode
-  setEmailAsVerified :: VerificationCode -> m ()
+  addAuth :: Auth -> m (UserId, VerificationCode)
+  setEmailAsVerified :: VerificationCode -> m (UserId, Email)
   findUserByAuth :: Auth -> m (Maybe (UserId, Bool))
   findEmailFromUserId :: UserId -> m (Maybe Email)
 
@@ -111,23 +132,35 @@ class Monad m => SessionRepo m where
   newSession :: UserId -> m SessionId
   findUserBySessionId :: SessionId -> m (Maybe UserId)
 
-register :: (MonadError e m, AuthRepo m, EmailVerificationNotif m, AsRegistrationError e) => Auth -> m ()
+register :: (KatipContext m, MonadError e m, AuthRepo m, EmailVerificationNotif m, AsRegistrationError e) => Auth -> m ()
 register auth = do
-  vCode <- addAuth auth
+  (uId, vCode) <- addAuth auth
   let email = auth ^. authEmail
   notifyEmailVerification email vCode
+  withUserIdContext uId $
+    $(logTM) InfoS $ ls (rawEmail email) <> " is registered succesfully"
+
+withUserIdContext :: (KatipContext m) => UserId -> m a -> m a
+withUserIdContext uId = katipAddContext (sl "userId" uId)
   
 
-verifyEmail :: (MonadError e m, AsEmailVerificationError e, AuthRepo m) => VerificationCode -> m ()
-verifyEmail = setEmailAsVerified
+verifyEmail :: (KatipContext m, MonadError e m, AsEmailVerificationError e, AuthRepo m) => VerificationCode -> m ()
+verifyEmail vcode = do 
+  (uId, email) <- setEmailAsVerified vcode
+  withUserIdContext uId $
+    $(logTM) InfoS $ ls (rawEmail email) <> " is verified succesfully"
+  pure ()
 
-login :: (MonadError e m, AuthRepo m, SessionRepo m, AsLoginError e) => Auth -> m SessionId
+login :: (KatipContext m, MonadError e m, AuthRepo m, SessionRepo m, AsLoginError e) => Auth -> m SessionId
 login auth = do
   result <- findUserByAuth auth
   case result of
     Nothing          -> throwing_ _LoginErrorInvalidAuth
     Just (_, False)  -> throwing_ _LoginErrorEmailNotVerified
-    Just (uId, True) -> newSession uId
+    Just (uId, True) -> withUserIdContext uId $ do
+      sId <- newSession uId
+      $(logTM) InfoS $ ls (rawEmail $ auth ^. authEmail) <> " logged in succesfully"
+      return sId
 
 resolveSessionId :: SessionRepo m => SessionId -> m (Maybe UserId)
 resolveSessionId = findUserBySessionId

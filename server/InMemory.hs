@@ -42,9 +42,13 @@ initialState = State
   }
 
 
-type InMemory r e m = (MonadReader r m, MonadError e m, MonadIO m, HasStateInTVar r)
+type InMemory r e m = (MonadReader r m, MonadError AppError m, MonadIO m, HasStateInTVar r)
 
-addAuth :: (InMemory r e m, AsRegistrationError e) => Auth -> m VerificationCode
+orThrow :: (MonadError AppError m) => Maybe a -> (AReview AppError ()) -> m a
+orThrow Nothing  e = throwing_ e
+orThrow (Just a) _ = pure a
+
+addAuth :: (InMemory r e m) => Auth -> m (UserId, VerificationCode)
 addAuth auth = do
   tvarState' <- view tVarState
   state <- liftIO $ readTVarIO tvarState'
@@ -53,26 +57,27 @@ addAuth auth = do
       authEmails =  state ^. stateAuths <&> ( _authEmail . snd)
       isDuplicate = anyOf folded (email ==) authEmails
   when isDuplicate $ throwing_ _RegistrationErrorEmailTaken
-  let newUserID = state ^. stateUserIdCounter + 1
+  let newUserId = state ^. stateUserIdCounter + 1
   let newState = state
-        & stateUserIdCounter .~ newUserID
-        & stateAuths %~ cons (newUserID, auth)
+        & stateUserIdCounter .~ newUserId
+        & stateAuths %~ cons (newUserId, auth)
         & stateUnverifiedEmails . at vcode ?~ email
   liftIO $ atomically $ writeTVar tvarState' newState
-  return vcode
+  pure (newUserId, vcode)
 
-setEmailAsVerified :: (InMemory r e m, AsEmailVerificationError e) => VerificationCode -> m ()
+setEmailAsVerified :: (InMemory r e m) => VerificationCode -> m (UserId, Email)
 setEmailAsVerified vcode = do
   tvarState' <- view tVarState
   state <- liftIO $ readTVarIO tvarState'
   let mayEmail = state ^. stateUnverifiedEmails . at vcode
-  case mayEmail of
-    Nothing -> throwing_ _EmailerificationErrorInvalidCode
-    Just email -> do
-      let newState = state
-            & stateUnverifiedEmails . at vcode .~ Nothing
-            & stateVerifiedEmails . at email ?~ ()
-      liftIO $ atomically $ writeTVar tvarState' newState
+  email <- mayEmail `orThrow` _EmailerificationErrorInvalidCode
+  let mayUserId = fmap fst . find ((email ==) . _authEmail . snd) $ state ^. stateAuths
+  uId <- mayUserId `orThrow` _EmailerificationErrorInvalidCode
+  let newState = state
+        & stateUnverifiedEmails . at vcode .~ Nothing
+        & stateVerifiedEmails . at email ?~ ()
+  liftIO $ atomically $ writeTVar tvarState' newState
+  pure (uId, email)
 
 findUserByAuth :: InMemory r e m => Auth -> m (Maybe (UserId, Bool))
 findUserByAuth auth = do

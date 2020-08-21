@@ -1,36 +1,25 @@
-{-# LANGUAGE  DerivingStrategies #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 module InMemoryTest where
 
 import Control.Monad.Except
-import Control.Monad.Reader 
+import Control.Monad.Reader
 import Control.Lens
 import Control.Concurrent.STM
+import Data.Text
+import Katip
+import System.IO (stdout)
+import ClassyPrelude hiding (newTVarIO)
+
 import qualified InMemory as IM
 import Auth
 
-data AppError = RegAppErr RegistrationError
-              | LoginAppErr LoginError
-              | EmailValAppErr EmailValidationErr
-              | EmailVeriAppErr EmailVerificationError
-              deriving stock (Show, Eq)
-
-makeClassyPrisms ''AppError
-
-instance AsRegistrationError AppError where
-  _RegistrationError = _RegAppErr . _RegistrationError
-
-instance AsEmailVerificationError AppError where
-  _EmailVerificationError = _EmailVeriAppErr . _EmailVerificationError
-
-instance AsLoginError AppError where
-  _LoginError = _LoginAppErr . _LoginError
-
 newtype App a = App
-  { unApp :: ReaderT IM.StateInTVar (ExceptT AppError IO) a }
-  deriving newtype (Applicative, Functor, Monad, MonadReader IM.StateInTVar, MonadIO, MonadError AppError)
+  { unApp :: ReaderT IM.StateInTVar (ExceptT AppError (KatipContextT IO)) a }
+  deriving newtype (Applicative, Functor, Monad, MonadReader IM.StateInTVar, MonadIO, MonadError AppError, KatipContext, Katip)
 
 instance AuthRepo App where
   addAuth = IM.addAuth
@@ -45,8 +34,35 @@ instance SessionRepo App where
   newSession = IM.newSession
   findUserBySessionId = IM.findUserBySessionId
 
-runApp :: IM.StateInTVar -> App a -> IO (Either AppError a)
-runApp state app = runExceptT $ runReaderT (unApp app) state
+withKatip :: (LogEnv -> IO a) -> IO a
+withKatip app  =
+  bracket createLogEnv closeScribes app
+    where
+      createLogEnv = do
+        logEnv <- initLogEnv "blog" "dev"
+        stdoutScribe <- mkHandleScribe ColorIfTerminal stdout InfoS V2
+        registerScribe "stdout" stdoutScribe defaultScribeSettings logEnv
+
+logSomething :: (KatipContext m) => m ()
+logSomething = do
+  $(logTM) InfoS "Log in no namespace"
+  katipAddNamespace "ns1" $
+    $(logTM) InfoS "Log in ns1"
+  katipAddNamespace "ns2" $ do
+    $(logTM) WarningS "Log in ns2"
+    katipAddNamespace "ns3" $
+      katipAddContext (sl "userId" $ show "12") $ do
+        $(logTM) InfoS "Log in ns2.ns3 with userId context"
+        katipAddContext (sl "country" $ show "Denmark") $
+          $(logTM) InfoS "Log in ns2.ns3 with userID and country context"
+
+runKatip :: IO ()
+runKatip = withKatip $ \le ->
+  runKatipContextT le () mempty logSomething
+
+
+runApp :: LogEnv -> IM.StateInTVar -> App a -> IO (Either AppError a)
+runApp le state app = runKatipContextT le () mempty $ runExceptT $ runReaderT (unApp app) state
 
 app :: App ()
 app = do
@@ -69,12 +85,12 @@ app = do
                            Just email -> liftIO $ print (session, userId, email) 
 
 main :: IO ()
-main = do
+main = withKatip $ \le -> do
   state <- newTVarIO IM.initialState
-  result <- runApp (IM.StateInTVar state) app
+  result <- runApp le (IM.StateInTVar state) app
   case result of
     Left _ -> putStrLn "failed"
-    Right _ -> pure ()
+    Right _ -> runKatip
 
 
 

@@ -20,6 +20,7 @@ executable server
                     containers,
                     classy-prelude,
                     http-types,
+                    katip,
                     pcre-heavy,
                     lens,
                     lucid,

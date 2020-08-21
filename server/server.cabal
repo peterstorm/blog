@@ -13,7 +13,9 @@ executable server
   default-language: Haskell2010
   other-modules:    Html,
                     Auth,
-                    Validation
+                    Validation,
+                    InMemory,
+                    InMemoryTest
   build-depends:    aeson,
                     base < 5,
                     common,

@@ -7,9 +7,7 @@ module InMemoryTest where
 
 import Control.Monad.Except
 import Control.Monad.Reader
-import Control.Lens
 import Control.Concurrent.STM
-import Data.Text
 import Katip
 import System.IO (stdout)
 import ClassyPrelude hiding (newTVarIO)
@@ -82,7 +80,7 @@ application = do
                          registeredEmail <- getUser userId
                          case registeredEmail of
                            Nothing -> liftIO $ putStrLn "failed"
-                           Just email -> liftIO $ print (session, userId, email) 
+                           Just emailReg -> liftIO $ print (session, userId, emailReg) 
 
 main :: IO ()
 main = withKatip $ \le -> do

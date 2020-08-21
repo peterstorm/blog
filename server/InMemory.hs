@@ -8,8 +8,9 @@ import Control.Concurrent.STM
 import Control.Monad.Reader
 import Control.Monad.Except
 import Control.Monad.Error.Lens
+import Data.Monoid (First (..))
 import Text.StringRandom
-import Data.Text hiding (find, cons)
+import Data.Text hiding (find, cons, index)
 import Data.List
 
 import Auth
@@ -44,6 +45,11 @@ initialState = State
 
 type InMemory r e m = (MonadReader r m, MonadError AppError m, MonadIO m, HasStateInTVar r)
 
+filteredBy :: (Indexable i p, Applicative f) => Getting (First i) a i -> p a (f a) -> a -> f a
+filteredBy p f val = case val ^? p of
+                         Nothing -> pure val
+                         Just witness -> indexed f witness val
+
 orThrow :: (MonadError AppError m) => Maybe a -> (AReview AppError ()) -> m a
 orThrow Nothing  e = throwing_ e
 orThrow (Just a) _ = pure a
@@ -54,7 +60,7 @@ addAuth auth = do
   state <- liftIO $ readTVarIO tvarState'
   vcode <- liftIO $ stringRandomIO "[A-Za-z0-9]{16}"
   let email = auth ^. authEmail
-      authEmails =  state ^. stateAuths <&> ( _authEmail . snd)
+      authEmails = state ^. stateAuths <&> view (_2 . authEmail) 
       isDuplicate = anyOf folded (email ==) authEmails
   when isDuplicate $ throwing_ _RegistrationErrorEmailTaken
   let newUserId = state ^. stateUserIdCounter + 1
@@ -71,7 +77,7 @@ setEmailAsVerified vcode = do
   state <- liftIO $ readTVarIO tvarState'
   let mayEmail = state ^. stateUnverifiedEmails . at vcode
   email <- mayEmail `orThrow` _EmailerificationErrorInvalidCode
-  let mayUserId = fmap fst . find ((email ==) . _authEmail . snd) $ state ^. stateAuths
+  let mayUserId = state ^? stateAuths . folded . filteredBy (_2 . authEmail . only email) <&> view _1
   uId <- mayUserId `orThrow` _EmailerificationErrorInvalidCode
   let newState = state
         & stateUnverifiedEmails . at vcode .~ Nothing
@@ -82,11 +88,11 @@ setEmailAsVerified vcode = do
 findUserByAuth :: InMemory r e m => Auth -> m (Maybe (UserId, Bool))
 findUserByAuth auth = do
   state <- view tVarState >>= liftIO . readTVarIO
-  let maybeId = fmap fst . find ((auth ==) . snd) $ state ^. stateAuths
-  case maybeId of
+  let mayUserId = state ^. stateAuths & findOf folded (anyOf (_2) (auth ==)) <&> view _1
+  case mayUserId of
     Nothing  -> return Nothing
     Just uID -> do
-      let isVerified = state ^. stateVerifiedEmails & elem (_authEmail auth)
+      let isVerified = state ^. stateVerifiedEmails & elem (auth ^. authEmail)
       pure $ Just(uID, isVerified)
   
 
@@ -94,8 +100,7 @@ findEmailFromUserId :: InMemory r e m => UserId -> m (Maybe Email)
 findEmailFromUserId uId = do
   state <- view tVarState >>= liftIO . readTVarIO
   let maybeAuth = find ((uId ==) . fst) $ state ^. stateAuths
-  pure $ maybeAuth <&> (_authEmail . snd)
-
+  pure $ maybeAuth <&> view (_2 . authEmail)
 
 notifyEmailVerification :: InMemory r e m => Email -> VerificationCode -> m ()
 notifyEmailVerification email vCode = do

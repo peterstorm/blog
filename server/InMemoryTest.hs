@@ -64,8 +64,8 @@ runKatip = withKatip $ \le ->
 runApp :: LogEnv -> IM.StateInTVar -> App a -> IO (Either AppError a)
 runApp le state app = runKatipContextT le () mempty $ runExceptT $ runReaderT (unApp app) state
 
-app :: App ()
-app = do
+application :: App ()
+application = do
   let email = either undefined id $ mkEmail "pkshdk@gmail.com"
       passw = either undefined id $ mkPassword "123a1awfAWEFAW123"
       auth = Auth email passw
@@ -87,7 +87,7 @@ app = do
 main :: IO ()
 main = withKatip $ \le -> do
   state <- newTVarIO IM.initialState
-  result <- runApp le (IM.StateInTVar state) app
+  result <- runApp le (IM.StateInTVar state) application 
   case result of
     Left _ -> putStrLn "failed"
     Right _ -> runKatip

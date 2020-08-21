@@ -17,6 +17,7 @@ module Auth (
   EmailVerificationError(..),
   AsEmailVerificationError(..),
   LoginError(..),
+  AsLoginError(..),
   AuthRepo(..),
   EmailVerificationNotif(..),
   SessionRepo(..),
@@ -98,8 +99,8 @@ makeClassyPrisms ''EmailVerificationError
 type VerificationCode = Text
 
 class Monad m => AuthRepo m where
-  addAuth :: Auth -> m (Either e VerificationCode)
-  setEmailAsVerified :: VerificationCode -> m (Either e ())
+  addAuth :: Auth -> m VerificationCode
+  setEmailAsVerified :: VerificationCode -> m ()
   findUserByAuth :: Auth -> m (Maybe (UserId, Bool))
   findEmailFromUserId :: UserId -> m (Maybe Email)
 
@@ -114,12 +115,10 @@ register :: (MonadError e m, AuthRepo m, EmailVerificationNotif m, AsRegistratio
 register auth = do
   vCode <- addAuth auth
   let email = auth ^. authEmail
-  case vCode of
-    Left _ -> throwing_ _RegistrationErrorEmailTaken
-    Right x -> notifyEmailVerification email x
+  notifyEmailVerification email vCode
+  
 
-
-verifyEmail :: (MonadError e m, AsEmailVerificationError e, AuthRepo m) => VerificationCode -> m (Either e ())
+verifyEmail :: (MonadError e m, AsEmailVerificationError e, AuthRepo m) => VerificationCode -> m ()
 verifyEmail = setEmailAsVerified
 
 login :: (MonadError e m, AuthRepo m, SessionRepo m, AsLoginError e) => Auth -> m SessionId
@@ -135,64 +134,4 @@ resolveSessionId = findUserBySessionId
 
 getUser :: (AuthRepo m) => UserId -> m (Maybe Email)
 getUser = findEmailFromUserId
-
-instance AuthRepo m => AuthRepo (ExceptT e m) where
-  addAuth = lift . addAuth
-  setEmailAsVerified = lift . setEmailAsVerified
-  findUserByAuth = lift . findUserByAuth 
-  findEmailFromUserId = undefined
-
-instance SessionRepo m => SessionRepo (ExceptT e m) where
-  newSession = lift . newSession
-  findUserBySessionId = lift . findUserBySessionId
-
-instance EmailVerificationNotif m => EmailVerificationNotif (ExceptT e m) where
-  notifyEmailVerification email code = lift $ notifyEmailVerification email code
-
--- for testing
-regErrorString :: RegistrationError -> String
-regErrorString RegistrationErrorEmailTaken = "failed, email taken"
-
-loginErrorString :: LoginError -> String
-loginErrorString LoginErrorInvalidAuth = "invalid auth"
-loginErrorString LoginErrorEmailNotVerified = "email not verified"
-
-
-
-instance AuthRepo IO where
-  addAuth (Auth email pass) = do
-    putStrLn $ "adding auth: " <> (unpack $ rawEmail email)
-    pure $ Right "fake verification code"
-  setEmailAsVerified = undefined
-  findUserByAuth _ = pure $ Just (1, False)
-  findEmailFromUserId = undefined
-
-instance EmailVerificationNotif IO where
- notifyEmailVerification email vcode =
-   putStrLn $ "Notify " <> (unpack $ rawEmail email) <> " - " <> (unpack vcode)
-
-instance SessionRepo IO where
-  newSession _ = pure "asefawefawfe"
-  findUserBySessionId = undefined
-
-main :: IO ()
-main = do
-  let email = mkEmail (pack "test@oister.dk")
-  let password = mkPassword (pack "123AAaa45")
-  case email of
-    Left x -> putStrLn $ Prelude.foldr (\a b -> a <> ", " <> b) "" $ fmap unpack x
-    Right x -> do
-      case password of
-        Left x' -> putStrLn $ Prelude.foldr (\a b -> a <> ", " <> b) "" $ fmap unpack x'
-        Right xx -> do
-          let auth = Auth x xx
-          result <- runExceptT $ register auth
-          case result of
-            Left x''  -> putStrLn $ regErrorString x''
-            Right _ -> pure ()
-          session <- runExceptT $ login auth
-          case session of
-            Left x'''     -> putStrLn $ loginErrorString x'''
-            Right session -> putStrLn $ unpack session
-
 

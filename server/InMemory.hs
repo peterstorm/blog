@@ -31,6 +31,16 @@ data StateInTVar = StateInTVar { _tVarState :: TVarState }
 
 makeClassy ''StateInTVar
 
+initialState :: State
+initialState = State 
+  { _stateAuths = []
+  , _stateUnverifiedEmails = mempty
+  , _stateVerifiedEmails = mempty
+  , _stateUserIdCounter = 0
+  , _stateNotifications = mempty
+  , _stateSessions = mempty
+  }
+
 
 type InMemory r e m = (MonadReader r m, MonadError e m, MonadIO m, HasStateInTVar r)
 

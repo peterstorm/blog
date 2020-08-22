@@ -13,12 +13,8 @@ module Auth (
   SessionId,
   AppError(..),
   AsAppError(..),
-  RegistrationError(..),
   AsRegistrationError(..),
-  EmailValidationErr(..),
-  EmailVerificationError(..),
   AsEmailVerificationError(..),
-  LoginError(..),
   AsLoginError(..),
   AuthRepo(..),
   EmailVerificationNotif(..),
@@ -87,21 +83,21 @@ data RegistrationError = RegistrationErrorEmailTaken
 
 makeClassyPrisms ''RegistrationError
 
-data EmailValidationErr = EmailValidationErrorInvalidEmail
+data EmailValidationError = EmailValidationErrorInvalidEmail
                         | Todo
-                          deriving (Show, Eq)
+                        deriving (Show, Eq)
 
-makeClassyPrisms ''EmailValidationErr
+makeClassyPrisms ''EmailValidationError
 
 data EmailVerificationError = EmailerificationErrorInvalidCode
                             | Todo1
-  deriving (Show, Eq)
+                            deriving (Show, Eq)
 
 makeClassyPrisms ''EmailVerificationError
 
 data AppError = RegAppErr RegistrationError
               | LoginAppErr LoginError
-              | EmailValAppErr EmailValidationErr
+              | EmailValAppErr EmailValidationError
               | EmailVeriAppErr EmailVerificationError
               deriving stock (Show, Eq)
 
@@ -115,6 +111,9 @@ instance AsEmailVerificationError AppError where
 
 instance AsLoginError AppError where
   _LoginError = _LoginAppErr . _LoginError
+
+instance AsEmailValidationError AppError where
+  _EmailValidationError = _EmailValAppErr . _EmailValidationError
 
 
 type VerificationCode = Text
@@ -144,7 +143,7 @@ withUserIdContext :: (KatipContext m) => UserId -> m a -> m a
 withUserIdContext uId = katipAddContext (sl "userId" uId)
   
 
-verifyEmail :: (KatipContext m, MonadError e m, AsEmailVerificationError e, AuthRepo m) => VerificationCode -> m ()
+verifyEmail :: (KatipContext m, MonadError e m, AuthRepo m, AsEmailVerificationError e) => VerificationCode -> m ()
 verifyEmail vcode = do 
   (uId, email) <- setEmailAsVerified vcode
   withUserIdContext uId $

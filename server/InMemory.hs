@@ -43,18 +43,18 @@ initialState = State
   }
 
 
-type InMemory r e m = (MonadReader r m, MonadError AppError m, MonadIO m, HasStateInTVar r)
+type InMemory r e m = (MonadReader r m, MonadError e m, MonadIO m, HasStateInTVar r)
 
 filteredBy :: (Indexable i p, Applicative f) => Getting (First i) a i -> p a (f a) -> a -> f a
 filteredBy p f val = case val ^? p of
                          Nothing -> pure val
                          Just witness -> indexed f witness val
 
-orThrow :: (MonadError AppError m) => Maybe a -> (AReview AppError ()) -> m a
+orThrow :: (MonadError e m) => Maybe a -> (AReview e ()) -> m a
 orThrow Nothing  e = throwing_ e
 orThrow (Just a) _ = pure a
 
-addAuth :: (InMemory r e m) => Auth -> m (UserId, VerificationCode)
+addAuth :: (InMemory r e m, AsRegistrationError e) => Auth -> m (UserId, VerificationCode)
 addAuth auth = do
   tvarState' <- view tVarState
   state <- liftIO $ readTVarIO tvarState'
@@ -71,12 +71,12 @@ addAuth auth = do
   liftIO $ atomically $ writeTVar tvarState' newState
   pure (newUserId, vcode)
 
-setEmailAsVerified :: (InMemory r e m) => VerificationCode -> m (UserId, Email)
+setEmailAsVerified :: (InMemory r e m, AsEmailVerificationError e) => VerificationCode -> m (UserId, Email)
 setEmailAsVerified vcode = do
   tvarState' <- view tVarState
   state <- liftIO $ readTVarIO tvarState'
   let mayEmail = state ^. stateUnverifiedEmails . at vcode
-  email <- mayEmail `orThrow` _EmailerificationErrorInvalidCode
+  email <- mayEmail `orThrow`_EmailerificationErrorInvalidCode
   let mayUserId = state ^? stateAuths . folded . filteredBy (_2 . authEmail . only email) <&> view _1
   uId <- mayUserId `orThrow` _EmailerificationErrorInvalidCode
   let newState = state

@@ -55,9 +55,8 @@ type Title = Miso.MisoString
 type Description = Miso.MisoString
 
 -- | Handlers
-handlers = homeView
-  :<|> aboutView
-  :<|> weddingView
+handlers :: (Model -> View Action) :<|> (Model -> View Action) :<|> (Model -> View Action)
+handlers = homeView :<|> aboutView :<|> weddingView
 
 -- View function of the Home route
 homeView :: Model -> View Action

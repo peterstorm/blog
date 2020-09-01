@@ -1,25 +1,25 @@
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TypeApplications           #-}
-{-# LANGUAGE TypeOperators              #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE CPP                        #-}
+{-# LANGUAGE CPP               #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE TypeOperators     #-}
 
 module Common where
 
-import Control.Lens
-import Data.Proxy ( Proxy(..) )
-import qualified Data.Map as Map
-import qualified Servant.API as Servant
-import Servant.API ( (:<|>)(..), (:>) )
+import           Control.Lens
+import qualified Data.Map      as Map
+import           Data.Proxy    (Proxy (..))
+import           Servant.API   ((:<|>) (..), (:>))
+import qualified Servant.API   as Servant
 #if MIN_VERSION_servant(0,10,0)
 import qualified Servant.Links as Servant
 #endif
+import           Miso          (View)
 import qualified Miso
-import Miso ( View )
-import Miso.Html
-import qualified Miso.String as Miso
-import qualified Network.URI as Network
+import           Miso.Html
+import qualified Miso.String   as Miso
+import qualified Network.URI   as Network
 
 
 data Model
@@ -38,7 +38,7 @@ data Action
   deriving (Show, Eq)
 
 -- Holds a servant route tree of `View action`
-type ViewRoutes = Home :<|> About :<|> Wedding
+type ViewRoutes = Home :<|> About :<|> Wedding :<|> Contact
 
 type Home = View Action
 
@@ -46,24 +46,26 @@ type About = "about" :> View Action
 
 type Wedding = "bryllup" :> View Action
 
-type Link = Miso.MisoString 
+type Contact = "contact" :> View Action
 
-type ImgSrc = Miso.MisoString 
+type Link = Miso.MisoString
 
-type Title = Miso.MisoString 
+type ImgSrc = Miso.MisoString
+
+type Title = Miso.MisoString
 
 type Description = Miso.MisoString
 
 -- | Handlers
-handlers :: (Model -> View Action) :<|> (Model -> View Action) :<|> (Model -> View Action)
-handlers = homeView :<|> aboutView :<|> weddingView
+handlers :: (Model -> View Action) :<|> (Model -> View Action) :<|> (Model -> View Action) :<|> (Model -> View Action)
+handlers = homeView :<|> aboutView :<|> weddingView :<|> contactView
 
 -- View function of the Home route
 homeView :: Model -> View Action
 homeView _ = template $ hero
-  where hero = 
+  where hero =
           main_ [ id_ "content", class_ "white-background" ]
-            [ div_ [ class_ "container" ] 
+            [ div_ [ class_ "container" ]
               [ div_ [ class_ "row" ]
                 [ div_ [ class_ "project-listing col-12", onCreated InitMasonry ]
                   [ div_ [ class_ "grid clearfix", stringProp "data-masonry" ("{ \"itemSelector\": \".grid-item\""
@@ -88,9 +90,44 @@ aboutView _ = template $ hero
   where hero =
           main_ [ id_ "content", class_ "white-background" ]
             [ div_ [ class_ "custom-grid col-12" ]
-              [ div_ [ class_ "grid-section1", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] [] 
-              , div_ [ class_ "grid-section2", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] []  
-              , div_ [ class_ "grid-section3", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] [] 
+              [ div_ [ class_ "grid-section1", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] []
+              , div_ [ class_ "grid-section2", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] []
+              , div_ [ class_ "grid-section3", style_ $ Map.fromList [( Miso.pack "background", Miso.pack "#fff")] ] []
+              ]
+            ]
+
+contactView :: Model -> View Action
+contactView _ = template $ content
+  where content =
+          main_ [ id_ "content", class_ "white-background" ]
+            [ div_ [ class_ "container" ]
+              [ div_ [ class_ "row eq-height-container" ]
+                [ div_ [ class_ "col-md-6" ]
+                  [ div_ [ class_ "grey-box", style_ $ Map.fromList [ (Miso.pack "background", Miso.pack "url(static/images/sample-square.png) center bottom no-repeat")
+                                                                    , (Miso.pack "background-size", Miso.pack "cover")
+                                                                    ] ]
+                    [ div_ [  id_ "address-selector", class_ "overlay eq-height" ]
+                      [ div_ [ id_ "address-NLD", class_ "address-container active" ]
+                        [ div_ [ class_ "address-details" ]
+                          [ h1_ [] [ text "We're here!" ]
+                          , ul_ [ class_ "ul-custom-bullet" ]
+                            [ li_ [] [ i_ [ class_ "saulticon-map" ] [], text "Test test", br_ [], text "test 1234", br_ [], text "Denmark" ]
+                            , li_ [] [ i_ [ class_ "saulticon-call" ] [], text "1231241234123123" ]
+                            , li_ [] [ i_ [ class_ "saulticon-mail" ] [], text "test@test.com" ]
+                            ]
+                          ]
+                        , div_ [ class_ "map" ]
+                            [ iframe_ [ width_ "600", height_ "450", style_ $ Map.singleton (Miso.pack "border") (Miso.pack "0"), src_ "https://www.google.com/maps/embed/v1/place?key=AIzaSyBgsIWBq3RlVwJ3msi0277fxh4gZgWLY8c&q=52.3746634,4.8592912&zoom=15&maptype=roadmap" ] []
+                            ]
+                        ]
+                      , a_ [ href_ "#", class_ "bottom-button" ]
+                          [ span_ [ class_ "show-layer" ] [ text "Locate on map", i_ [ class_ "saulticon-arrow-up" ] [] ]
+                          , span_ [ class_ "hide-layer" ] [ text "Close map", i_ [ class_ "saulticon-arrow-down" ] [] ]
+                          ]
+                      ]
+                    ]
+                  ]
+                ]
               ]
             ]
 
@@ -136,7 +173,7 @@ gridItem link uri' src title desc =
     ]
 
 template :: View Action -> View Action
-template content = 
+template content =
   div_ []
     [ header
     , content
@@ -144,12 +181,12 @@ template content =
     ]
 
 header :: View Action
-header = 
+header =
   header_ [ id_ "top", class_ "navbar header" ]
     [ div_ [ class_ "container" ]
       [ div_ [ class_ "inner" ]
         [ div_ [ class_ "site-menu" ]
-          [ a_ [ href_ "/", onPreventClick $ ChangeURI homeLink, class_ "logo" ] [ img_ [ src_ "static/images/logo-storm.png", width_ "144", height_ "33", alt_ "Storm" ] ] ] 
+          [ a_ [ href_ "/", onPreventClick $ ChangeURI homeLink, class_ "logo" ] [ img_ [ src_ "static/images/logo-storm.png", width_ "144", height_ "33", alt_ "Storm" ] ] ]
           , input_ [ class_ "menu-btn", type_ "checkbox", id_ "menu-btn" ]
           , label_ [ class_ "menu-icon", for_ "menu-btn" ] [ span_ [ class_ "navicon" ] [] ]
           , ul_ [ class_ "menu" ]
@@ -200,5 +237,15 @@ weddingLink  =
 #else
     safeLink (Proxy @ViewRoutes) (Proxy @Wedding)
 #endif
+
+contactLink ::  Network.URI
+contactLink =
+#if MIN_VERSION_servant(0,10,0)
+    Servant.linkURI $ Servant.safeLink (Proxy @ViewRoutes) (Proxy @Contact)
+#else
+    safeLink (Proxy @ViewRoutes) (Proxy @Contact)
+#endif
+
+
 
 

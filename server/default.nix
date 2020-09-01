@@ -5,7 +5,7 @@ let
 
   haskellPackages = pkgs.haskell.packages.ghc864;
   server = pkgs.haskell.packages.ghc.callCabal2nix "server" ./. {
-  common = pkgs.haskell.packages.ghc.callCabal2nix "common" ../common {};
+    common = pkgs.haskell.packages.ghc.callCabal2nix "common" ../common {};
   };
 
 in
@@ -14,7 +14,7 @@ in
     shell = haskellPackages.shellFor {
       packages = p: [server];
       buildInputs = with haskellPackages;
-        [ cabal-install hpkgs.hpkgs.haskell-language-server ];
+        [ cabal-install hpkgs.hpkgs.haskell-language-server stylish-haskell ];
      shellHook = ''
         export PS1="\n\[[${name}:\033[1;32m\]\W\[\033[0m\]]> "
      '';

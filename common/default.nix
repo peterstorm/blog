@@ -12,7 +12,7 @@ in
     shell = haskellPackages.shellFor {
       packages = p: [common];
       buildInputs = with haskellPackages;
-        [ cabal-install hpkgs.hpkgs.haskell-language-server ]; 
+        [ cabal-install hpkgs.hpkgs.haskell-language-server stylish-haskell ]; 
           shellHook = ''
      export PS1="\n\[[${name}:\033[1;32m\]\W\[\033[0m\]]> "
   '';

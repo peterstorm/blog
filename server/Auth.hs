@@ -1,4 +1,8 @@
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, FlexibleContexts, OverloadedStrings, DerivingStrategies #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE FlexibleContexts   #-}
+{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE QuasiQuotes        #-}
+{-# LANGUAGE TemplateHaskell    #-}
 module Auth (
   Auth(..),
   authEmail,
@@ -26,14 +30,14 @@ module Auth (
   getUser
 ) where
 
-import Control.Lens hiding (re)
-import Control.Monad.Except
-import Control.Monad.Error.Lens
-import Data.Text
-import Text.Regex.PCRE.Heavy
-import Katip
+import           Control.Lens             hiding (re)
+import           Control.Monad.Error.Lens
+import           Control.Monad.Except
+import           Data.Text
+import           Katip
+import           Text.Regex.PCRE.Heavy
 
-import Validation
+import           Validation
 
 newtype Email = Email { emailRaw :: Text } deriving (Show, Eq, Ord)
 
@@ -61,7 +65,7 @@ mkPassword = validate Password
   ]
 
 data Auth = Auth
-  { _authEmail :: Email
+  { _authEmail    :: Email
   , _authPassword :: Password
   } deriving (Show, Eq)
 
@@ -141,10 +145,10 @@ register auth = do
 
 withUserIdContext :: (KatipContext m) => UserId -> m a -> m a
 withUserIdContext uId = katipAddContext (sl "userId" uId)
-  
+
 
 verifyEmail :: (KatipContext m, MonadError e m, AuthRepo m, AsEmailVerificationError e) => VerificationCode -> m ()
-verifyEmail vcode = do 
+verifyEmail vcode = do
   (uId, email) <- setEmailAsVerified vcode
   withUserIdContext uId $
     $(logTM) InfoS $ ls (rawEmail email) <> " is verified succesfully"

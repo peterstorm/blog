@@ -1,19 +1,19 @@
-{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DerivingStrategies         #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE NoImplicitPrelude          #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE TemplateHaskell            #-}
 module InMemoryTest where
 
-import Control.Monad.Except
-import Control.Monad.Reader
-import Control.Concurrent.STM
-import Katip
-import System.IO (stdout)
-import ClassyPrelude hiding (newTVarIO)
+import           ClassyPrelude          hiding (newTVarIO)
+import           Control.Concurrent.STM
+import           Control.Monad.Except
+import           Control.Monad.Reader
+import           Katip
+import           System.IO              (stdout)
 
-import qualified InMemory as IM
-import Auth
+import           Auth
+import qualified InMemory               as IM
 
 newtype App a = App
   { unApp :: ReaderT IM.StateInTVar (ExceptT AppError (KatipContextT IO)) a }
@@ -80,14 +80,14 @@ application = do
                          registeredEmail <- getUser userId
                          case registeredEmail of
                            Nothing -> liftIO $ putStrLn "failed"
-                           Just emailReg -> liftIO $ print (session, userId, emailReg) 
+                           Just emailReg -> liftIO $ print (session, userId, emailReg)
 
 main :: IO ()
 main = withKatip $ \le -> do
   state <- newTVarIO IM.initialState
-  result <- runApp le (IM.StateInTVar state) application 
+  result <- runApp le (IM.StateInTVar state) application
   case result of
-    Left _ -> putStrLn "failed"
+    Left _  -> putStrLn "failed"
     Right _ -> runKatip
 
 

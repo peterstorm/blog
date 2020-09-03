@@ -5,7 +5,7 @@ let
   hls = src.hls;
   haskellPackages = pkgs.haskell.packages.ghc864;
   server = pkgs.haskell.packages.ghc.callCabal2nix "server" (src.gitignoreSource ./.) {
-    common = pkgs.haskell.packages.ghc.callCabal2nix "common" ../common {};
+    common = pkgs.haskell.packages.ghc.callCabal2nix "common" (src.gitignoreSource ../common) {};
   };
   name = "blog";
 

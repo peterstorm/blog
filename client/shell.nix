@@ -1,6 +1,7 @@
-{ pkgs ? import ../nixpkgs.nix }:
+{ src ? import ../nixpkgs.nix }:
 
 let
+  pkgs = src.pkgs;
   haskellPackages = pkgs.haskell.packages.ghc864;
   client = pkgs.haskell.packages.ghcjs.callCabal2nix "client" ./. {
   common = pkgs.haskell.packages.ghcjs.callCabal2nix "common" ../common {};

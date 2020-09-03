@@ -152,6 +152,7 @@ weddingView _ =
                       ]
                     , div_ [ class_ "post-content" ]
                       [ p_ [] [ text "This is a test to see if it actually works, and it seems it does! Let's see how it looks with more text" ]
+                        , p_ [] [ text "Let's add another paragraph, and more text to see how it formats" ]
                       ]
                       , div_ [ class_ "grey-box", style_ $ Map.fromList [ (Miso.pack "background", Miso.pack "url(static/images/sample-square.png) center bottom no-repeat")
                                                                       , (Miso.pack "background-size", Miso.pack "cover")

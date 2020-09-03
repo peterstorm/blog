@@ -1,6 +1,7 @@
 let
 
   bootstrap = import <nixpkgs> {};
+  sources = import ./nix/sources.nix;
 
   nixpkgs-src = bootstrap.fetchFromGitHub {
     owner = "NixOS";
@@ -43,6 +44,16 @@ let
     };
   };
 
-in
+  pkgs = import nixpkgs-src { inherit config; };
+  gis = import sources.gitignore { inherit (pkgs) lib; };
+  hls = import ./nix/hls.nix {};
 
-  import nixpkgs-src { inherit config; }
+  self = {
+    inherit pkgs;
+    inherit (gis) gitignoreSource;
+    inherit hls;
+  };
+
+in
+  self
+

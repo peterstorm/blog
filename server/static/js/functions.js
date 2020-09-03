@@ -140,6 +140,30 @@ jQuery( function () {
 		}
 	});
 
+  jQuery( "#address-selector1 .bottom-button" ).on( "click", function ( e ) {
+      e.preventDefault();
+      jQuery( "#address-selector1" ).toggleClass( "show-map" );
+    });
+
+    jQuery( "#address-selector1 .change-address" ).on( "click", function ( e ) {
+      e.preventDefault();
+      // check if parent is clicked
+      var $target = jQuery( e.target ),
+        $parent = $target.parent();
+      if ( $target.hasClass( "address-list" ) || $parent.hasClass( "address-list" ) ) {
+        if ( $target.hasClass( "address-code" ) ) {
+          jQuery( "#address-selector1 .change-address" ).removeClass( "show-list" );
+          jQuery( "#address-selector1 .address-container" ).not( "#address-" + $target.data( "address-code" ) ).removeClass( "active" );
+          jQuery( "#address-selector1 #address-" + $target.data( "address-code" ) ).addClass( "active" );
+          if ( jQuery.fn.matchHeight ) {
+            jQuery.fn.matchHeight._update();
+          }
+        }
+      } else {
+        jQuery( "#address-selector1 .change-address" ).toggleClass( "show-list" );
+      }
+    });
+
 	if ( jQuery.fn.matchHeight ) {
 		jQuery( ".eq-height-container .eq-height" ).matchHeight();
 	}

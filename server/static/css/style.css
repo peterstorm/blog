@@ -2438,6 +2438,20 @@ body .extra-margin-top {
 	display: block;
 }
 
+#address-selector {
+	position: relative;
+	padding-bottom: 7rem;
+	overflow: hidden;
+}
+
+#address-selector .address-container {
+	display: none;
+}
+
+#address-selector .address-container.active {
+	display: block;
+}
+
 #address-selector .change-address {
 	position: relative;
 	display: inline-block;
@@ -2534,6 +2548,141 @@ body .extra-margin-top {
 	top: .3rem;
 	font-size: 24px;
 	padding-left: .5rem;
+}
+
+/* 15. Address Selector 1 */	
+
+#address-selector1 .address-container {
+	display: none;
+}
+
+#address-selector1 .address-container.active {
+	display: block;
+}
+
+#address-selector1 {
+	position: relative;
+	padding-bottom: 7rem;
+	overflow: hidden;
+}
+
+#address-selector1 .address-container {
+	display: none;
+}
+
+#address-selector1 .address-container.active {
+	display: block;
+}
+
+#address-selector1 .change-address {
+	position: relative;
+	display: inline-block;
+	color: #654ce8;
+}
+
+#address-selector1 .change-address:focus {
+	outline: 0;
+}
+
+#address-selector1 .change-address i {
+	font-size: 1em;
+	position: relative;
+	top: .1em;
+}
+
+#address-selector1 .change-address .address-list {
+	position: absolute;
+	z-index: 1;
+	display: none;
+	top: 100%;
+	left: -1.5rem;
+	padding: .5rem 1.5rem;
+	width: auto;
+	background-color: #fff;
+	-webkit-box-shadow: 0 20px 40px 0 rgba(139, 153, 163, .1);
+	        box-shadow: 0 20px 40px 0 rgba(139, 153, 163, .1);
+	border-radius: 1.4rem;
+}
+
+#address-selector1 .change-address.show-list .address-list {
+	display: block;
+}
+
+#address-selector1 .change-address .address-list .address-code {
+	display: block;
+	color: initial;
+}
+
+#address-selector1 .change-address .address-list .address-code.selected {
+	color: inherit;
+}
+
+#address-selector1 .map {
+	position: absolute;
+	z-index: 2;
+	left: 0;
+	top: 100%;
+	width: 100%;
+	bottom: 0;
+	margin-top: -6rem;
+	-webkit-transition: .3s top, .3s bottom, .3s margin;
+	-o-transition: .3s top, .3s bottom, .3s margin;
+	transition: .3s top, .3s bottom, .3s margin;
+}
+
+#address-selector1.show-map .map {
+	top: 0;
+	bottom: 6rem;
+	margin-top: 0;
+}
+
+#address-selector1 .map iframe {
+	width: 100%;
+	height: 100%;
+}
+
+#address-selector1 .bottom-button {
+	position: absolute;
+	z-index: 3;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	height: 6rem;
+	display: block;
+	background-color: #fff;
+	background-color: rgba(255, 255, 255, .9);
+	line-height: 6rem;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+#address-selector1 .bottom-button .hide-layer,
+#address-selector1.show-map .bottom-button .show-layer {
+	display: none;
+}
+
+#address-selector1.show-map .bottom-button .hide-layer {
+	display: inline;
+}
+
+#address-selector1 .bottom-button i {
+	position: relative;
+	top: .3rem;
+	font-size: 24px;
+	padding-left: .5rem;
+}
+
+#address-selector1 {
+		padding-bottom: 8rem;
+}
+
+#address-selector1 ul li {
+		font-size: 1.1rem;
+		margin-bottom: 2rem;
+}
+
+#address-selector1 ul li i {
+		font-size: 24px;
 }
 
 .contact-form button[type=submit] {

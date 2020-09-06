@@ -3,7 +3,7 @@
 {-# LANGUAGE NoImplicitPrelude          #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TemplateHaskell            #-}
-module InMemoryTest where
+module Adapter.InMemoryTest where
 
 import           ClassyPrelude          hiding (newTVarIO)
 import           Control.Concurrent.STM
@@ -12,8 +12,8 @@ import           Control.Monad.Reader
 import           Katip
 import           System.IO              (stdout)
 
-import           Auth
-import qualified InMemory               as IM
+import           Domain.Auth
+import qualified Adapter.InMemory               as IM
 
 newtype App a = App
   { unApp :: ReaderT IM.StateInTVar (ExceptT AppError (KatipContextT IO)) a }

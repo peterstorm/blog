@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings  #-}
 {-# LANGUAGE QuasiQuotes        #-}
 {-# LANGUAGE TemplateHaskell    #-}
-module Auth (
+module Domain.Auth (
   Auth(..),
   authEmail,
   Email,
@@ -37,7 +37,7 @@ import           Data.Text
 import           Katip
 import           Text.Regex.PCRE.Heavy
 
-import           Validation
+import           Domain.Validation
 
 newtype Email = Email { emailRaw :: Text } deriving (Show, Eq, Ord)
 

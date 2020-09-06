@@ -1,5 +1,5 @@
 {-# LANGUAGE QuasiQuotes, FlexibleContexts #-}
-module Validation where
+module Domain.Validation where
 
 import qualified Data.Text as T 
 import           Data.Maybe

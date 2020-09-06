@@ -77,6 +77,12 @@ homeView _ = template $ hero
                       ]
                     , gridItem "/about" aboutLink "static/images/sample-square.png" "BON" "Create intrigue around bla bla products"
                     , gridItem "/about" aboutLink "static/images/sample-square.png" "FrockHub" "Luxury fashion resource by Saxon Campbell"
+                    , gridItemWide"/about" aboutLink "static/images/sample-square.png" "FrockHub" "Luxury fashion resource by Saxon Campbell"
+                    , gridItem "/about" aboutLink "static/images/sample-square.png" "FrockHub" "Luxury fashion resource by Saxon Campbell"
+                    , gridItem "/about" aboutLink "static/images/sample-square.png" "FrockHub" "Luxury fashion resource by Saxon Campbell"
+                    , gridItemWide "/about" aboutLink "static/images/sample-square.png" "FrockHub" "Luxury fashion resource by Saxon Campbell"
+                    , gridItem "/about" aboutLink "static/images/sample-square.png" "FrockHub" "Luxury fashion resource by Saxon Campbell"
+                    , gridItem "/about" aboutLink "static/images/sample-square.png" "FrockHub" "Luxury fashion resource by Saxon Campbell"
                     , div_ [ class_ "grid-sizer" ] []
                     , div_ [ class_ "gutter-sizer" ] []
                     ]
@@ -247,6 +253,19 @@ gridItem link uri' src title desc =
       ]
     ]
 
+gridItemWide :: Link -> Network.URI -> ImgSrc -> Title -> Description -> View Action
+gridItemWide link uri' src title desc =
+  div_ [  class_ "grid-item grid-item-wide project-thumb" ]
+    [ a_ [ href_ link, onPreventClick $ ChangeURI uri' ]
+      [ img_ [ src_ src, width_ "900", height_ "900", alt_ "" ]
+      , span_ [ class_ "project-thumb-details" ]
+        [ span_ [ class_ "title" ] [ text title ]
+        , span_ [ class_ "description" ] [ text desc ]
+        ]
+      , i_ [ class_ "saulticon-arrow-forward" ] []
+      ]
+    ]
+
 template :: View Action -> View Action
 template content =
   div_ []
@@ -268,7 +287,7 @@ header =
             [ li_ [] [ a_ [ href_ "/", onPreventClick $ ChangeURI homeLink ] [ text "HOME" ] ]
             , li_ [] [ a_ [ href_ "/about", onPreventClick $ ChangeURI aboutLink ] [ text "ABOUT" ] ]
             , li_ [] [ a_ [ href_ "/about", onPreventClick $ ChangeURI aboutLink ] [ text "BLOG" ] ]
-            , li_ [] [ a_ [ href_ "/about", onPreventClick $ ChangeURI aboutLink ] [ text "CONTACT" ] ]
+            , li_ [] [ a_ [ href_ "/contact", onPreventClick $ ChangeURI contactLink ] [ text "CONTACT" ] ]
             ]
         ]
         ]

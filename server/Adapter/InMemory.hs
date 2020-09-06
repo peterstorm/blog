@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE TemplateHaskell   #-}
-module InMemory where
+module Adapter.InMemory where
 
 import           Control.Concurrent.STM
 import           Control.Lens
@@ -17,7 +17,7 @@ import           Data.Set
 import           Data.Text                hiding (cons, find, index)
 import           Text.StringRandom
 
-import           Auth
+import           Domain.Auth
 
 data State = State
   { _stateAuths            :: [(UserId, Auth)]

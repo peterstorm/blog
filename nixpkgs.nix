@@ -11,11 +11,18 @@ let
   };
 
   config = { 
+    allowBroken = true;
     packageOverrides = pkgs: rec {
       haskell = pkgs.haskell // {
         packages = pkgs.haskell.packages // {
 
-          ghc = pkgs.haskell.packages.ghc864;
+          ghc = pkgs.haskell.packages.ghc864.override {
+            overrides = self: super: with pkgs.haskell.lib; {
+              beam-core     = overrideCabal super.beam-core (drv: { patches = []; });
+              beam-migrate  = overrideCabal super.beam-migrate (drv: { patches = []; });
+              beam-postgres = dontCheck (overrideCabal super.beam-postgres (drv: { patches = []; }));
+            };
+          };
 
           } // {
 

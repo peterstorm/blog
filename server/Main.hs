@@ -21,7 +21,7 @@ import qualified System.IO                            as IO
 import qualified Common
 import qualified Domain.Post as Domain
 import           Html
-import           Http.Api.Post
+import           Http.API.Post
 import Data.Text (Text)
 
 main :: IO ()

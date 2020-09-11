@@ -35,8 +35,8 @@ instance SessionRepo App where
 withKatip :: (LogEnv -> IO a) -> IO a
 withKatip app  =
   bracket createLogEnv closeScribes app
-    where
-      createLogEnv = do
+    where 
+     createLogEnv = do
         logEnv <- initLogEnv "blog" "dev"
         stdoutScribe <- mkHandleScribe ColorIfTerminal stdout InfoS V2
         registerScribe "stdout" stdoutScribe defaultScribeSettings logEnv

@@ -38,6 +38,7 @@ instance FromJSON Post
 class Monad m => PostOperations m where
   getAllPosts :: m [Post]
   getPostBySlug :: Text -> m (Maybe Post)
+  createPost :: Post -> m ()
 
 --instance ToJSON PostId where
 --  toJSON (PostId i) = toJSON i

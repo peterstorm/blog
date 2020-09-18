@@ -9,20 +9,14 @@ import           Data.Aeson
 import           Data.Set
 import           Data.Text
 import           Data.Time
-import           Data.UUID
 import           GHC.Generics
 
-newtype PostId = PostId UUID
-  deriving (Show, Generic)
 
-instance ToJSON PostId
-instance FromJSON PostId
 
 data Post = Post
-  { _postId        :: PostId
+  { _postId        :: Int 
   , _postSlug      :: Text
   , _postTitle     :: Text
-  , _postSubTitle  :: Text
   , _postBody      :: Text
   , _postTagList   :: Set Text
   , _postCreatedAt :: UTCTime

@@ -12,11 +12,13 @@ executable server
   ghc-options:      -O2 -threaded -Wall
   default-language: Haskell2010
   other-modules:    Html,
-                    Http.API.Post,
                     Domain.Auth,
                     Domain.Validation,
                     Domain.Post,
                     Adapter.Database.Database,
+                    Adapter.Post.API,
+                    Adapter.Post.Database,
+                    Adapter.Post.Types,
                     Adapter.InMemory,
                     Adapter.InMemoryTest
   build-depends:    aeson,
@@ -34,6 +36,7 @@ executable server
                     postgresql-simple,
                     resource-pool,
                     lens,
+                    lens-aeson,
                     lucid,
                     miso,
                     mtl,
@@ -49,5 +52,6 @@ executable server
                     uuid,
                     wai,
                     wai-extra,
-                    warp
+                    warp,
+                    wreq
 

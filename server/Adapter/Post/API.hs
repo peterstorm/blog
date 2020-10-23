@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds     #-}
 {-# LANGUAGE TypeOperators #-}
-module Http.API.Post where
+module Adapter.Post.API where
 
 import           Servant
 

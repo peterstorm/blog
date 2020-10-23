@@ -144,7 +144,7 @@ weddingView _ =
               [ div_ [ class_ "row" ]
                 [ div_ [ class_ "col-12" ]
                   [ div_ [ class_ "post-featured-image" ]
-                    [ img_ [ src_ "https://scontent.fbma4-1.fna.fbcdn.net/v/t31.0-8/20449176_10155586457802888_7483912760165311604_o.jpg?_nc_cat=101&_nc_sid=8bfeb9&_nc_ohc=KBbfZJAKmZAAX_x1P9U&_nc_ht=scontent.fbma4-1.fna&oh=733d38215d6855d2a2a043d2beb055c9&oe=5F74C450", width_ "1180", height_ "680", alt_ "" ]
+                    [ img_ [ src_ "https://scontent-cph2-1.xx.fbcdn.net/v/t31.0-8/20449176_10155586457802888_7483912760165311604_o.jpg?_nc_cat=101&_nc_sid=8bfeb9&_nc_ohc=Cfbg4dtOboAAX_mGCZd&_nc_ht=scontent-cph2-1.xx&oh=d8ac90366bd51d5973d93e5da5c35562&oe=5FAC2350", width_ "1180", height_ "680", alt_ "" ]
                     ]
                   ]
                 , div_ [ class_ "col-12 col-md-10 offset-md-1 col-lg-8 offset-lg-2" ]

@@ -1,8 +1,9 @@
-{-# LANGUAGE ConstraintKinds   #-}
-{-# LANGUAGE FlexibleContexts  #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE ConstraintKinds    #-}
+{-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE FlexibleContexts   #-}
+{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE QuasiQuotes        #-}
+{-# LANGUAGE TemplateHaskell    #-}
 module Adapter.InMemory where
 
 import           Control.Concurrent.STM
@@ -26,7 +27,7 @@ data State = State
   , _stateUserIdCounter    :: Int
   , _stateNotifications    :: M.Map Email VerificationCode
   , _stateSessions         :: M.Map SessionId UserId
-  } deriving (Show, Eq)
+  } deriving stock (Show, Eq)
 
 makeLenses ''State
 

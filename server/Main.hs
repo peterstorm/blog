@@ -18,11 +18,11 @@ import           Servant                              ((:<|>) (..), (:>))
 import qualified Servant
 import qualified System.IO                            as IO
 
+import           Adapter.Post.API
 import qualified Common
-import qualified Domain.Post as Domain
+import           Data.Text                            (Text)
+import qualified Domain.Post                          as Domain
 import           Html
-import           Http.API.Post
-import Data.Text (Text)
 
 main :: IO ()
 main = do
@@ -35,11 +35,11 @@ main = do
 
 app :: Wai.Application
 app =
-    Servant.serve (Proxy @ServerAPI) (static :<|> serverHandlers :<|> Servant.Tagged page404 :<|> postServer)
+    Servant.serve (Proxy @ServerAPI) (static :<|> serverSideRenderingHandlers :<|> Servant.Tagged page404 :<|> postServer)
           where
             static = Servant.serveDirectoryFileServer "static"
 
-testHandlerGetPost :: Text -> Servant.Handler Domain.Post 
+testHandlerGetPost :: Text -> Servant.Handler Domain.Post
 testHandlerGetPost = undefined
 
 testHandlerGetPosts :: Servant.Handler [Domain.Post]
@@ -48,8 +48,8 @@ testHandlerGetPosts = undefined
 postServer :: Servant.Server PostApi
 postServer = testHandlerGetPosts :<|> testHandlerGetPost
 
-serverHandlers :: ServerHandler :<|> ServerHandler :<|> ServerHandler :<|> ServerHandler
-serverHandlers = homeServer :<|> aboutServer :<|> weddingServer :<|> contactServer
+serverSideRenderingHandlers :: ServerHandler :<|> ServerHandler :<|> ServerHandler :<|> ServerHandler
+serverSideRenderingHandlers = homeServer :<|> aboutServer :<|> weddingServer :<|> contactServer
   where
     send f u = pure $ HtmlPage $ f Common.Model { Common._uri = u }
     homeServer = send Common.homeView Common.homeLink
@@ -76,7 +76,7 @@ type ServerAPI =
        StaticAPI
   :<|> (ServerRoutes
   :<|> Servant.Raw -- This will show the 404 page for any unknown routew
-  :<|> PostApi) 
+  :<|> PostApi)
 
 type StaticAPI = "static" :> Servant.Raw
 

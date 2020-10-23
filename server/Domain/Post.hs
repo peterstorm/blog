@@ -9,12 +9,13 @@ import           Data.Aeson
 import           Data.Set
 import           Data.Text
 import           Data.Time
+import           Data.UUID
 import           GHC.Generics
 
 
 
 data Post = Post
-  { _postId        :: Int 
+  { _postId        :: UUID
   , _postSlug      :: Text
   , _postTitle     :: Text
   , _postBody      :: Text

@@ -14,16 +14,15 @@
 {-# LANGUAGE TypeFamilies          #-}
 module Adapter.Database.Database where
 
-import           ClassyPrelude          hiding (bracket, try)
+import           ClassyPrelude          hiding (bracket)
 import           Control.Lens
-import           Control.Monad.Catch    hiding (try)
 import           Control.Monad.Except
 import           Control.Monad.Reader   ()
 import           Data.ByteString        ()
 import           Data.Pool
-import           Data.Time
 import           Database.Beam
 import           Database.Beam.Postgres
+import           Database.Beam.Postgres (SqlError (..))
 
 import           Adapter.Post.Types     as Post
 
@@ -58,10 +57,13 @@ envPool Test        = 1
 envPool Development = 1
 envPool Production  = 8
 
-withConnection :: DbOperations r e m =>  (Connection -> IO a) -> m (Either e a)
+withConnection :: DbOperations r e m => (Connection -> IO a) -> m a
 withConnection f = do
   pool <- view dbConnectionPool
-  try $ liftIO . withResource pool $ \conn -> f conn
+  result <- liftIO $ try $ withResource pool $ \conn -> f conn
+  case result of
+    Left err -> throwError $ _DbErrorCode # err
+    Right v -> pure v
 
 makePoolTest :: IO (Pool Connection)
 makePoolTest = do
@@ -70,20 +72,3 @@ makePoolTest = do
       closeConn = close
   pool <- initPool
   pure pool
-
-{-
-   withPool :: (MonadIO m, MonadReader r m, HasDbConfig r) => (Pool Connection -> IO a) -> m a
-withPool action = do
-  cfg <- ask
-  let initPool = createPool openConn closeConn
-                      (cfg ^. dbStripeCount)
-                      (cfg ^. dbIdleConnTimeout)
-                      (cfg ^. dbMaxOpenConnPrStripe)
-      cleanPool = destroyAllResources
-      openConn  = connectPostgreSQL (cfg ^. dbConnectionString)
-      closeConn = close
-  liftIO $ bracket initPool cleanPool action
-  -}
-
-try :: forall e (m :: * -> *) a. (MonadError e m, AsDbError e) => m a -> m (Either e a)
-try a = catchError (Right `liftM` a) (pure . Left)

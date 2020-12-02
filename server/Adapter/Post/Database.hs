@@ -17,7 +17,6 @@ import           Data.Time
 import           Data.UUID.V4
 import           Database.Beam
 import           Database.Beam.Postgres
-import qualified Data.ByteString as BS
 import Control.Monad.Reader (runReaderT, ReaderT)
 import Control.Monad.Except (runExceptT, ExceptT)
 
@@ -33,7 +32,7 @@ createTestPosts = do
                   , (DB.Post postId' "test1" "test1" "test1" "test1" time' time')]
   pure testPosts
 
-insertPostsDebug :: DbOperations r e m => m (Either e ())
+insertPostsDebug :: DbOperations r e m => m ()
 insertPostsDebug = do
   testPosts <- liftIO $ createTestPosts
   withConnection (\c ->
@@ -53,7 +52,7 @@ main = do
   c <- runInit
   e <- runTest c $ insertPostsDebug
   case e of
-    Left _ -> putStrLn "failed"
+    Left err -> putStrLn $ show err
     Right _ -> pure ()
   
 

@@ -5,7 +5,7 @@ let
                 sha256 = "160raids1zlawmi0v7rmhai54gidfc1kdqj0zcqqzpcc9darnlmi";
                   };
   in
-{ ghc ? "ghc864"
+{ ghc ? "ghc865"
 , pkgs ? import defaultNixpkgs {
     config = {
       allowUnfree = true; # allow unfree internal dependencies

@@ -8,7 +8,7 @@ module Adapter.InMemoryTest where
 import           ClassyPrelude          hiding (newTVarIO)
 import           Control.Concurrent.STM
 import           Control.Monad.Except
-import           Control.Monad.Reader
+import           Control.Monad.Reader()
 import           Katip
 import           System.IO              (stdout)
 
@@ -89,11 +89,3 @@ main = withKatip $ \le -> do
   case result of
     Left _  -> putStrLn "failed"
     Right _ -> runKatip
-
-
-
-
-
-
-
-

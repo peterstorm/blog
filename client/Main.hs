@@ -19,35 +19,39 @@ import GHCJS.Types
 import GHCJS.Marshal
 import GHCJS.Foreign.Callback
 
+import Model
+import Action
+import Routes
+
 main :: IO ()
 main =
   Miso.miso $ \currentURI -> App
-    { initialAction = Common.NoOp
-    , model         = Common.Model currentURI
+    { initialAction = NoOp
+    , model         = Model currentURI
     , update        = Miso.fromTransition . updateModel
     , view          = viewModel
     , events        = Miso.defaultEvents
-    , subs          = [ Miso.uriSub Common.HandleURIChange ]
+    , subs          = [ Miso.uriSub HandleURIChange ]
     , mountPoint    = Nothing
     }
       where 
-        viewModel m = case Miso.runRoute (Proxy :: Proxy Common.ViewRoutes ) Common.handlers Common._uri m of
+        viewModel m = case Miso.runRoute (Proxy :: Proxy ViewRoutes ) Common.handlers _uri m of
                        Left _  -> Common.page404View
                        Right v -> v
 
 updateModel
-    :: Common.Action
-    -> Miso.Transition Common.Action Common.Model ()
+    :: Action
+    -> Miso.Transition Action Model ()
 updateModel action =
     case action of
-      Common.NoOp          -> pure ()
-      Common.ChangeURI uri ->
+      NoOp          -> pure ()
+      ChangeURI uri ->
         Miso.scheduleIO $ do
           Miso.pushURI uri
-          pure Common.NoOp
-      Common.HandleURIChange uri -> Common.uri .= uri
-      Common.InitMasonry -> Miso.scheduleIO $ do 
+          pure NoOp
+      HandleURIChange uri -> Model.uri .= uri
+      InitMasonry -> Miso.scheduleIO $ do 
         initMasonry
-        pure Common.NoOp
+        pure NoOp
 
 foreign import javascript unsafe "initMasonry" initMasonry :: IO ()

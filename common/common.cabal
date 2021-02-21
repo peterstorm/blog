@@ -5,7 +5,18 @@ cabal-version:      >=1.10
 license:            PublicDomain
 
 library
-  exposed-modules:  Common
+  exposed-modules:  Common,
+                    Model,
+                    Action,
+                    Routes
+  other-modules:    Views.Wedding,
+                    Views.Home,
+                    Views.Header,
+                    Views.About,
+                    Views.Template,
+                    Views.Footer,
+                    Views.Contact,
+                    Utils
   ghc-options:      -Wall
   default-language: Haskell2010
   build-depends:    aeson,
